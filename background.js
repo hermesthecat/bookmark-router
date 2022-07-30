@@ -1,5 +1,39 @@
 /* global browser */
 
+const manifest = browser.runtime.getManifest();
+const extname = manifest.name;
+
+browser.menus.create({
+	id: extname,
+	title: "Copy Bookmark Folder Id",
+	contexts: ["bookmark"],
+	visible: false,
+	onclick: async function(info/*, tab*/) {
+		if(info.bookmarkId){
+            try {
+                await navigator.clipboard.writeText(info.bookmarkId);
+                console.log(info.bookmarkId);
+            }catch(e){
+                console.error(e);
+            }
+		}
+	}
+});
+
+
+browser.menus.onShown.addListener(async function(info/*, tab*/) {
+	if(info.bookmarkId ) {
+        const bookmarkTreeNode = await browser.bookmarks.get(info.bookmarkId);
+		if(!bookmarkTreeNode.url) {
+			browser.menus.update(extname, {visible: true});
+		}else{
+			browser.menus.update(extname, {visible: false});
+		}
+	}
+	browser.menus.refresh();
+});
+
+
 browser.browserAction.onClicked.addListener(async (tab) => {
     // 1. get fromm regexs + bookmarkIds from storage
 
