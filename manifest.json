@@ -5,8 +5,16 @@
   "background": {
 	"scripts": ["background.js"]
   },
+  "commands": {
+    "_execute_page_action": {
+        "suggested_key": {
+            "default": "Ctrl+Alt+B"
+        }
+    }
+  },
   "description": "Place bookmarks into specific folders based on url regex matches",
   "icons": {
+    "128": "icon.png"
   },
   "manifest_version": 2,
   "name": "Bookmark Placer",
@@ -19,5 +27,5 @@
     "bookmarks",
     "clipboardWrite"
   ],
-  "version": "1.1.0"
+  "version": "1.1.2"
 }
