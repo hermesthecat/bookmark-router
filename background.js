@@ -8,10 +8,10 @@ browser.menus.create({
 	title: "Copy Bookmark Folder Id",
 	contexts: ["bookmark"],
 	visible: false,
-	onclick: async function(info/*, tab*/) {
+	onclick: function(info/*, tab*/) {
 		if(info.bookmarkId){
             try {
-                await navigator.clipboard.writeText(info.bookmarkId);
+                navigator.clipboard.writeText(info.bookmarkId);
                 console.log(info.bookmarkId);
             }catch(e){
                 console.error(e);
@@ -22,12 +22,12 @@ browser.menus.create({
 
 
 browser.menus.onShown.addListener(async function(info/*, tab*/) {
-	if(info.bookmarkId ) {
-        const bookmarkTreeNode = await browser.bookmarks.get(info.bookmarkId);
-		if(!bookmarkTreeNode.url) {
-			browser.menus.update(extname, {visible: true});
+	if(info.bookmarkId) {
+        const bookmarkTreeNode = (await browser.bookmarks.get(info.bookmarkId))[0];
+		if(bookmarkTreeNode.url) {
+			await browser.menus.update(extname, {visible: false});
 		}else{
-			browser.menus.update(extname, {visible: false});
+			await browser.menus.update(extname, {visible: true});
 		}
 	}
 	browser.menus.refresh();
