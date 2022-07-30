@@ -1,0 +1,22 @@
+{
+  "author": "igorlogius",
+  "browser_action": {
+  },
+  "background": {
+	"scripts": ["background.js"]
+  },
+  "description": "Place bookmarks into specific folders based on url regex matches",
+  "icons": {
+  },
+  "manifest_version": 2,
+  "name": "Bookmark Placer",
+  "options_ui": {
+    "page": "options.html"
+  },
+  "permissions": [
+    "activeTab",
+    "storage",
+    "bookmarks"
+  ],
+  "version": "1.0.0"
+}
