@@ -6,7 +6,8 @@ let hidectx = false;
 
 browser.menus.create({
 	id: extname + "_tabs",
-	title: "Bookmark Placer",
+	title: "Place Bookmarks",
+	visible: false,
 	contexts: ["tab"],
 	onclick: bookmark // function(info/*, tab*/) {}
 });
@@ -29,15 +30,17 @@ browser.menus.create({
 });
 
 browser.menus.onShown.addListener(async function(info/*, tab*/) {
-	if(info.bookmarkId) {
-		const bookmarkTreeNode = (await browser.bookmarks.get(info.bookmarkId))[0];
-		if(bookmarkTreeNode.url || hidectx) {
-			await browser.menus.update(extname+"_bookmarks", {visible: false});
-		}else{
-			await browser.menus.update(extname+"_bookmarks", {visible: true});
-		}
-	}
-	browser.menus.refresh();
+    if(!hidectx) {
+        if(info.bookmarkId) {
+            const bookmarkTreeNode = (await browser.bookmarks.get(info.bookmarkId))[0];
+            if(bookmarkTreeNode.url) {
+                await browser.menus.update(extname+"_bookmarks", {visible: false});
+            }else{
+                await browser.menus.update(extname+"_bookmarks", {visible: true});
+            }
+        }
+        browser.menus.refresh();
+    }
 });
 
 
@@ -105,12 +108,16 @@ async function onStorageChanged(changes, area) {
 			let tmp = await browser.storage.local.get(storeid);
 			if (typeof tmp[storeid] === 'boolean'){
 				hidectx = tmp[storeid];
-				return;
 			}
+            else{
+                hidectx = false;
+            }
 		}catch(e){
 			console.error(e);
+            hidectx = false;
 		}
-		hidectx = false;
+        browser.menus.update(extname+"_bookmarks", {visible: !hidectx});
+		browser.menus.update(extname+"_tabs", {visible: !hidectx});
 }
 
 onStorageChanged();
