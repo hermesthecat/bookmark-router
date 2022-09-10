@@ -1,51 +1,5 @@
 /* global browser */
 
-const manifest = browser.runtime.getManifest();
-const extname = manifest.name;
-let hidectx = false;
-
-browser.menus.create({
-	id: extname + "_tabs",
-	title: "Place Bookmarks",
-	visible: false,
-	contexts: ["tab"],
-	onclick: bookmark // function(info/*, tab*/) {}
-});
-
-browser.menus.create({
-	id: extname + "_bookmarks",
-	title: "Copy Bookmark Folder Id",
-	contexts: ["bookmark"],
-	visible: false,
-	onclick: function(info/*, tab*/) {
-		if(info.bookmarkId){
-			try {
-				navigator.clipboard.writeText(info.bookmarkId);
-				console.log(info.bookmarkId);
-			}catch(e){
-				console.error(e);
-			}
-		}
-	}
-});
-
-browser.menus.onShown.addListener(async function(info/*, tab*/) {
-    if(!hidectx) {
-        if(info.bookmarkId) {
-            const bookmarkTreeNode = (await browser.bookmarks.get(info.bookmarkId))[0];
-            if(bookmarkTreeNode.url) {
-                await browser.menus.update(extname+"_bookmarks", {visible: false});
-            }else{
-                await browser.menus.update(extname+"_bookmarks", {visible: true});
-            }
-        }
-        browser.menus.refresh();
-    }
-});
-
-
-browser.browserAction.onClicked.addListener(bookmark);
-
 async function bookmark() {
 
 	// operate on highlighted tabs
@@ -102,25 +56,4 @@ async function bookmark() {
 	}
 }
 
-async function onStorageChanged(changes, area) {
-		try {
-			const storeid = 'hidectx';
-			let tmp = await browser.storage.local.get(storeid);
-			if (typeof tmp[storeid] === 'boolean'){
-				hidectx = tmp[storeid];
-			}
-            else{
-                hidectx = false;
-            }
-		}catch(e){
-			console.error(e);
-            hidectx = false;
-		}
-        browser.menus.update(extname+"_bookmarks", {visible: !hidectx});
-		browser.menus.update(extname+"_tabs", {visible: !hidectx});
-}
-
-onStorageChanged();
-
-browser.storage.onChanged.addListener(onStorageChanged);
-
+browser.browserAction.onClicked.addListener(bookmark);

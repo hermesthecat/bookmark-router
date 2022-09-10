@@ -2,162 +2,203 @@
 
 function onChange(evt) {
 
-	id = evt.target.id;
-	el = document.getElementById(id);
+    let id = evt.target.id;
+    let el = document.getElementById(id);
 
-	let value = ( (el.type === 'checkbox') ? el.checked : el.value)
-	let obj = {}
+    let value = ( (el.type === 'checkbox') ? el.checked : el.value)
+    let obj = {}
 
-	//console.log(id,value, el.type,el.min);
-	if(value === ""){
-		return;
-	}
-	if(el.type === 'number'){
-		try {
-			value = parseInt(value);
-			if(value === NaN){
-				value = el.min;
-			}
-			if(value < el.min) {
-				value = el.min;
-			}
-		}catch(e){
-			value = el.min
-		}
-	}
+    //console.log(id,value, el.type,el.min);
+    if(value === ""){
+        return;
+    }
+    if(el.type === 'number'){
+        try {
+            value = parseInt(value);
+            if(isNaN(value)){
+                value = el.min;
+            }
+            if(value < el.min) {
+                value = el.min;
+            }
+        }catch(e){
+            value = el.min
+        }
+    }
 
-	obj[id] = value;
+    obj[id] = value;
 
-	//console.log(id,value);
-	browser.storage.local.set(obj).catch(console.error);
+    //console.log(id,value);
+    browser.storage.local.set(obj).catch(console.error);
 
 }
 
 [ "hidectx" ].map( (id) => {
 
-	browser.storage.local.get(id).then( (obj) => {
+    browser.storage.local.get(id).then( (obj) => {
 
-		el = document.getElementById(id);
-		val = obj[id];
+        let el = document.getElementById(id);
+        let val = obj[id];
 
-		if(typeof val !== 'undefined') {
-			if(el.type === 'checkbox') {
-				el.checked = val;
-			}
-			else{
-				el.value = val;
-			}
-		}
+        if(typeof val !== 'undefined') {
+            if(el.type === 'checkbox') {
+                el.checked = val;
+            }
+            else{
+                el.value = val;
+            }
+        }
 
-	}).catch( (err) => {} );
+    }).catch( console.error );
 
-	el = document.getElementById(id);
-	el.addEventListener('click', onChange);
+    let el = document.getElementById(id);
+    el.addEventListener('click', onChange);
 });
 
 function deleteRow(rowTr) {
-	var mainTableBody = document.getElementById('mainTableBody');
-	mainTableBody.removeChild(rowTr);
+    let mainTableBody = document.getElementById('mainTableBody');
+    mainTableBody.removeChild(rowTr);
+}
+
+let bookmarkFolders = new Map();
+
+
+function recGetFolders(node, depth = 0){
+    let out = new Map();
+    if(typeof node.url !== 'string'){
+        if(node.id !== 'root________'){
+            out.set(node.id, { 'depth': depth, 'title': node.title });
+        }
+        if(node.children){
+            for(let child of node.children){
+                out = new Map([...out, ...recGetFolders(child, depth+1) ]);
+            }
+        }
+    }
+    return out;
+}
+
+async function initSelect() {
+    const nodes = await browser.bookmarks.getTree();
+    let out = new Map();
+    let depth = 1;
+    for(const node of nodes){
+        out = new Map([...out, ...recGetFolders(node, depth) ]);
+    }
+    bookmarkFolders = out;
 }
 
 function createTableRow(feed) {
-	var mainTableBody = document.getElementById('mainTableBody');
-	var tr = mainTableBody.insertRow();
+    let mainTableBody = document.getElementById('mainTableBody');
+    let tr = mainTableBody.insertRow();
 
-	Object.keys(feed).sort().forEach( (key) => {
+    Object.keys(feed).sort().forEach( (key) => {
 
-		var input = document.createElement('input');
-		input.className = key;
-		input.style.width = '95%';
-		switch (key) {
-			case 'activ':
-				input.placeholder = key;
-				input.type='checkbox';
-				input.checked= (typeof feed[key] === 'boolean') ? feed[key]: true;
-				break;
-			case 'bookmarkId':
-				input.placeholder = 'Bookmark Folder Id';
-				input.value = feed[key];
-				break;
-			case 'url_regex':
-				input.placeholder = 'url_regex';
-				input.value = feed[key];
-				break;
-			default:
-				return;
-		}
-		tr.insertCell().appendChild(input);
-	});
+        let input;
+        switch (key) {
+            case 'activ':
+                input = document.createElement('input');
+                input.className = key;
+                input.style.width = '95%';
+                input.placeholder = key;
+                input.type='checkbox';
+                input.checked= (typeof feed[key] === 'boolean') ? feed[key]: true;
+                break;
+            case 'bookmarkId':
+                input = document.createElement('select');
+                input.className = key;
+                input.style.width = '95%';
+                for(const [k,v] of bookmarkFolders){
+                    input.add(new Option(">".repeat(v.depth) + " " + v.title, k))
+                }
+                input.value = feed[key];
+                break;
+            case 'url_regex':
+                input = document.createElement('input');
+                input.className = key;
+                input.style.width = '95%';
+                input.placeholder = 'url_regex';
+                input.value = feed[key];
+                break;
+            default:
+                return;
+        }
+        tr.insertCell().appendChild(input);
+    });
 
-	var button;
-	if(feed.action === 'save'){
-		button = createButton("Create", "saveButton", function() {}, true );
-	}else{
-		button = createButton("Delete", "deleteButton", function() { deleteRow(tr); }, false );
-	}
-	tr.insertCell().appendChild(button);
+    let button;
+    if(feed.action === 'save'){
+        button = createButton("Create", "saveButton", function() {}, true );
+    }else{
+        button = createButton("Delete", "deleteButton", function() { deleteRow(tr); }, false );
+    }
+    tr.insertCell().appendChild(button);
 }
 
 function collectConfig() {
-	var mainTableBody = document.getElementById('mainTableBody');
-	var feeds = [];
-	for (var row = 0; row < mainTableBody.rows.length; row++) {
-		try {
-			var url_regex = mainTableBody.rows[row].querySelector('.url_regex').value.trim() || '';
-			var bookmarkId = mainTableBody.rows[row].querySelector('.bookmarkId').value || '';
-			var check = mainTableBody.rows[row].querySelector('.activ').checked || false ;
+    let mainTableBody = document.getElementById('mainTableBody');
+    let feeds = [];
+    for (let row = 0; row < mainTableBody.rows.length; row++) {
+        try {
+            let url_regex = mainTableBody.rows[row].querySelector('.url_regex').value.trim() || '';
+            let bookmarkId = mainTableBody.rows[row].querySelector('.bookmarkId').value || '';
+            let check = mainTableBody.rows[row].querySelector('.activ').checked || false ;
 
-			if(url_regex !== '' && bookmarkId !== '' ) {
-				feeds.push({
-					'activ': check,
-					'url_regex': url_regex,
-					'bookmarkId': bookmarkId
-				});
-			}
-		}catch(e){
-			console.error(e);
-		}
-	}
-	return feeds;
+            //console.log('bookmarkId', bookmarkId);
+
+            if(url_regex !== '' && bookmarkId !== '' ) {
+                feeds.push({
+                    'activ': check,
+                    'url_regex': url_regex,
+                    'bookmarkId': bookmarkId
+                });
+            }
+        }catch(e){
+            console.error(e);
+        }
+    }
+    return feeds;
 }
 
 function createButton(text, id, callback, submit) {
-	var span = document.createElement('span');
-	var button = document.createElement('button');
-	button.id = id;
-	button.textContent = text;
-	button.className = "browser-style";
-	if (submit) {
-		button.type = "submit";
-	} else {
-		button.type = "button";
-	}
-	button.name = id;
-	button.value = id;
-	button.addEventListener("click", callback);
-	span.appendChild(button);
-	return span;
+    let span = document.createElement('span');
+    let button = document.createElement('button');
+    button.id = id;
+    button.textContent = text;
+    button.className = "browser-style";
+    if (submit) {
+        button.type = "submit";
+    } else {
+        button.type = "button";
+    }
+    button.name = id;
+    button.value = id;
+    button.addEventListener("click", callback);
+    span.appendChild(button);
+    return span;
 }
 
 async function saveOptions(/*e*/) {
-	var feeds = collectConfig();
-	await browser.storage.local.set({ 'selectors': feeds });
+    let feeds = collectConfig();
+    await browser.storage.local.set({ 'selectors': feeds });
 }
 
 async function restoreOptions() {
-	//var mainTableBody = document.getElementById('mainTableBody');
-	createTableRow({
-		'activ': 1,
-		'bookmarkId': '' ,
-		'url_regex': '',
-		'action':'save',
-	});
-	var res = await browser.storage.local.get('selectors');
-	if ( !Array.isArray(res.selectors) ) { return; }
-	res.selectors.forEach( (selector) => {
-		selector.action = 'delete'
-		createTableRow(selector);
-	});
+
+    await initSelect();
+
+    createTableRow({
+        'activ': 1,
+        'bookmarkId': '' ,
+        'url_regex': '',
+        'action':'save',
+    });
+    let res = await browser.storage.local.get('selectors');
+    if ( !Array.isArray(res.selectors) ) { return; }
+    res.selectors.forEach( (selector) => {
+        selector.action = 'delete'
+        createTableRow(selector);
+    });
 }
 
 document.addEventListener('DOMContentLoaded', restoreOptions);
@@ -168,9 +209,9 @@ const impbtn = document.getElementById('impbtn');
 const expbtn = document.getElementById('expbtn');
 
 expbtn.addEventListener('click', async function (/*evt*/) {
-    var dl = document.createElement('a');
-    var res = await browser.storage.local.get('selectors');
-    var content = JSON.stringify(res.selectors,null,4);
+    let dl = document.createElement('a');
+    let res = await browser.storage.local.get('selectors');
+    let content = JSON.stringify(res.selectors,null,4);
     dl.setAttribute('href', 'data:application/json;charset=utf-8,' + encodeURIComponent(content));
     dl.setAttribute('download', 'data.json');
     dl.setAttribute('visibility', 'hidden');
@@ -182,15 +223,15 @@ expbtn.addEventListener('click', async function (/*evt*/) {
 
 // delegate to real Import Button which is a file selector
 impbtnWrp.addEventListener('click', function(/*evt*/) {
-	impbtn.click();
+    impbtn.click();
 })
 
 impbtn.addEventListener('input', function (/*evt*/) {
-	var file  = this.files[0];
-	var reader = new FileReader();
+    let file  = this.files[0];
+    let reader = new FileReader();
             reader.onload = async function(/*e*/) {
             try {
-                var config = JSON.parse(reader.result);
+                let config = JSON.parse(reader.result);
                 await browser.storage.local.set({ 'selectors': config});
                 document.querySelector("form").submit();
             } catch (e) {

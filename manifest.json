@@ -22,10 +22,8 @@
   },
   "permissions": [
     "tabs",
-    "menus",
     "storage",
-    "bookmarks",
-    "clipboardWrite"
+    "bookmarks"
   ],
-  "version": "1.3.6"
+  "version": "1.4.6"
 }
