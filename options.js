@@ -1,35 +1,10 @@
 /* global browser */
 
-let bookmarkFolders = new Map();
+let bookmarkFolders;
 
 function deleteRow(rowTr) {
     let mainTableBody = document.getElementById('mainTableBody');
     mainTableBody.removeChild(rowTr);
-}
-
-function recGetFolders(node, depth = 0){
-    let out = new Map();
-    if(typeof node.url !== 'string'){
-        if(node.id !== 'root________'){
-            out.set(node.id, { 'depth': depth, 'title': node.title });
-        }
-        if(node.children){
-            for(let child of node.children){
-                out = new Map([...out, ...recGetFolders(child, depth+1) ]);
-            }
-        }
-    }
-    return out;
-}
-
-async function initSelect() {
-    const nodes = await browser.bookmarks.getTree();
-    let out = new Map();
-    let depth = 1;
-    for(const node of nodes){
-        out = new Map([...out, ...recGetFolders(node, depth) ]);
-    }
-    bookmarkFolders = out;
 }
 
 function createTableRow(feed) {
@@ -88,8 +63,6 @@ function collectConfig() {
             let bookmarkId = mainTableBody.rows[row].querySelector('.bookmarkId').value || '';
             let check = mainTableBody.rows[row].querySelector('.activ').checked || false ;
 
-            //console.log('bookmarkId', bookmarkId);
-
             if(url_regex !== '' && bookmarkId !== '' ) {
                 feeds.push({
                     'activ': check,
@@ -129,7 +102,7 @@ async function saveOptions(/*e*/) {
 
 async function restoreOptions() {
 
-    await initSelect();
+    bookmarkFolders = await browser.runtime.sendMessage({});
 
     createTableRow({
         'activ': 1,
