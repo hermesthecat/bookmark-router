@@ -49,10 +49,10 @@
     "page": "options.html"
   },
   "permissions": [
-    "menus",
     "tabs",
     "storage",
+    "notifications",
     "bookmarks"
   ],
-  "version": "1.5.7"
+  "version": "1.6.7"
 }
