@@ -97,7 +97,7 @@ async function onBookmarkCreated(id, bookmark) {
                         if((new RegExp(selector.url_regex)).test(bookmark.url)){
                             if ( typeof selector.bookmarkId === 'string' ) {
                                 if ( selector.bookmarkId !== '' ) {
-                                    browser.bookmarks.move(id, {parentId: selector.bookmarkId, index: 0});
+                                    browser.bookmarks.move(id, {parentId: selector.bookmarkId});
                                     const bm = (await browser.bookmarks.get(selector.bookmarkId))[0];
                                     notify(extname, "Moved to '" + bm.title + "'");
                                     return;
