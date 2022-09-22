@@ -111,6 +111,13 @@ async function onBookmarkCreated(id, bookmark) {
     } // for
 }
 
+function onBookmarkChanged(id, changeInfo){
+    if(!changeInfo.url){
+        // If the item is a folder, url is omitted <=> folder renamed
+        delay_updateBookmarkFoldesCache();
+    }
+}
+
 // open option
 browser.browserAction.onClicked.addListener(onBAClicked);
 
@@ -121,5 +128,6 @@ browser.runtime.onMessage.addListener(onMessage);
 browser.runtime.onStartup.addListener(delay_updateBookmarkFoldesCache);
 browser.runtime.onInstalled.addListener(delay_updateBookmarkFoldesCache);
 browser.bookmarks.onRemoved.addListener(delay_updateBookmarkFoldesCache);
+browser.bookmarks.onChanged.addListener(onBookmarkChanged);
 browser.bookmarks.onCreated.addListener(onBookmarkCreated);
 
