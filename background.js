@@ -127,7 +127,7 @@ function onBookmarkChanged(id, changeInfo){
 }
 
 async function onStorageChanged() {
-    notifications = await getFromStorage('boolean','nofifications', true);
+    notifications = await getFromStorage('boolean','notifications', true);
     console.debug('notifications (2) ', notifications);
 }
 
@@ -147,7 +147,7 @@ browser.storage.onChanged.addListener(onStorageChanged);
 
 (async ()=>{
 
-    notifications = await getFromStorage('boolean','nofifications', true);
+    notifications = await getFromStorage('boolean','notifications', true);
     console.debug('notifications (1) ', notifications);
 
 })();
