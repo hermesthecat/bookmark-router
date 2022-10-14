@@ -6,16 +6,24 @@ const extname = manifest.name;
 
 let bookmarkFoldersCache;
 let delayTimerId;
+let notifications = false;
 
 function notify(title, message = "", iconUrl = "icon.png") {
-    return browser.notifications.create(""+Date.now(),
-        {
-           "type": "basic"
-            ,iconUrl
-            ,title
-            ,message
-        }
-    );
+    if(notifications){
+        return browser.notifications.create(""+Date.now(),
+            {
+               "type": "basic"
+                ,iconUrl
+                ,title
+                ,message
+            }
+        );
+    }
+}
+
+async function getFromStorage(type, id, fallback) {
+    let tmp = await browser.storage.local.get(id);
+    return (typeof tmp[id] === type) ? tmp[id] : fallback;
 }
 
 function recGetFolders(node, depth = 0){
@@ -118,6 +126,11 @@ function onBookmarkChanged(id, changeInfo){
     }
 }
 
+async function onStorageChanged() {
+    notifications = await getFromStorage('boolean','nofifications', true);
+    console.debug('notifications (2) ', notifications);
+}
+
 // open option
 browser.browserAction.onClicked.addListener(onBAClicked);
 
@@ -130,4 +143,12 @@ browser.runtime.onInstalled.addListener(delay_updateBookmarkFoldesCache);
 browser.bookmarks.onRemoved.addListener(delay_updateBookmarkFoldesCache);
 browser.bookmarks.onChanged.addListener(onBookmarkChanged);
 browser.bookmarks.onCreated.addListener(onBookmarkCreated);
+browser.storage.onChanged.addListener(onStorageChanged);
+
+(async ()=>{
+
+    notifications = await getFromStorage('boolean','nofifications', true);
+    console.debug('notifications (1) ', notifications);
+
+})();
 
