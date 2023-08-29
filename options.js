@@ -121,11 +121,11 @@ function createButton(text, id, callback, submit) {
     await browser.storage.local.set({ selectors: feeds });
 
     // Save syncCheckbox value to local storage
-    browser.storage.local.set({ syncEnabled: syncCheckbox.checked });
+    await browser.storage.local.set({ syncEnabled: syncCheckbox.checked });
 
     // Sync with account if checkbox is checked
     if (syncCheckbox.checked) {
-      browser.storage.sync.set({ selectors: feeds });
+      await browser.storage.sync.set({ selectors: feeds });
     }
   }
 
@@ -146,7 +146,7 @@ async function restoreOptions() {
   //    createTableRow(selector);
   //});
 
-  browser.storage.local.get("selectors", function (localResult) {
+  await browser.storage.local.get("selectors", function (localResult) {
     if (localResult.selectors) {
       localResult.selectors.forEach((selector) => {
         selector.action = "delete";
@@ -154,10 +154,10 @@ async function restoreOptions() {
       });
     } else {
       // If no local selectors, check for synced selectors
-      browser.storage.sync.get("selectors", function (syncResult) {
+     await browser.storage.sync.get("selectors", function (syncResult) {
         if (syncResult.selectors) {
           // Save synced selectors to local storage
-          browser.storage.local.set({ selectors: syncResult.selectors });
+          await browser.storage.local.set({ selectors: syncResult.selectors });
           // Populate selectorList with synced selectors
           syncResult.selectors.forEach((selector) => {
             selector.action = "delete";
@@ -178,10 +178,10 @@ const expbtn = document.getElementById("expbtn");
 
 // Sync button click event
 syncButton.addEventListener("click", function () {
-  browser.storage.sync.get("selectors", function (result) {
+  await browser.storage.sync.get("selectors", function (result) {
     if (result.selectors) {
       // Save synced selectors to local storage
-      browser.storage.local.set({ selectors: result.selectors });
+      await browser.storage.local.set({ selectors: result.selectors });
       // Populate selectorList with synced selectors
       result.selectors.forEach((selector) => {
         selector.action = "delete";
