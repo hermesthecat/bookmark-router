@@ -1,4 +1,4 @@
-Place bookmarks into specific folders based on url regex matches
+Place bookmarks into specific folders based on url regex matches (sync supported)
 
 <b>Usage: (Basic / Single) </b>
 <ol>
