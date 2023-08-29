@@ -116,10 +116,18 @@ function createButton(text, id, callback, submit) {
   return span;
 }
 
-async function saveOptions(/*e*/) {
-  let feeds = collectConfig();
-  await browser.storage.local.set({ selectors: feeds });
-}
+  async function saveOptions(/*e*/) {
+    let feeds = collectConfig();
+    await browser.storage.local.set({ selectors: feeds });
+
+    // Save syncCheckbox value to local storage
+    browser.storage.local.set({ syncEnabled: syncCheckbox.checked });
+
+    // Sync with account if checkbox is checked
+    if (syncCheckbox.checked) {
+      browser.storage.sync.set({ selectors: feeds });
+    }
+  }
 
 async function restoreOptions() {
   bookmarkFolders = await browser.runtime.sendMessage({});
