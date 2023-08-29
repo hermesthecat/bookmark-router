@@ -145,12 +145,12 @@ async function restoreOptions() {
         createTableRow(selector);
       });
     } else {
-      // If no local items, check for synced items
+      // If no local selectors, check for synced selectors
       browser.storage.sync.get("selectors", function (syncResult) {
         if (syncResult.selectors) {
-          // Save synced items to local storage
+          // Save synced selectors to local storage
           browser.storage.local.set({ selectors: syncResult.selectors });
-          // Populate itemList with synced items
+          // Populate selectorList with synced selectors
           syncResult.selectors.forEach((selector) => {
             selector.action = "delete";
             createTableRow(selector);
@@ -172,9 +172,9 @@ const expbtn = document.getElementById("expbtn");
 syncButton.addEventListener("click", function () {
   browser.storage.sync.get("selectors", function (result) {
     if (result.selectors) {
-      // Save synced items to local storage
+      // Save synced selectors to local storage
       browser.storage.local.set({ selectors: result.selectors });
-      // Populate itemList with synced items
+      // Populate selectorList with synced selectors
       result.selectors.forEach((selector) => {
         selector.action = "delete";
         createTableRow(selector);
