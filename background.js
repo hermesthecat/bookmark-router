@@ -24,11 +24,6 @@ browser.runtime.onInstalled.addListener(() => {
     if (syncResult.selectors) {
       // Save synced selectors to local storage
       browser.storage.local.set({ selectors: syncResult.selectors });
-      // Populate selectorList with synced selectors
-      syncResult.selectors.forEach((selector) => {
-        selector.action = "delete";
-        createTableRow(selector);
-      });
     }
   });
 });
