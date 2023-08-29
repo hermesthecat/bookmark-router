@@ -1,31 +1,25 @@
 {
-  "author": "igorlogius",
-  "browser_action": {
-  },
+  "author": "abdullahazad",
+  "browser_action": {},
   "background": {
-	"scripts": ["background.js"]
+    "scripts": ["background.js"]
   },
   "commands": {
     "_execute_browser_action": {
-        "suggested_key": {
-            "default": "Ctrl+Alt+B"
-        }
+      "suggested_key": {
+        "default": "Ctrl+Alt+Y"
+      }
     }
   },
   "icons": {
     "128": "icon.png"
   },
   "manifest_version": 2,
-  "name": "Bookmark Router",
+  "name": "Bookmark Router (fork)",
   "options_ui": {
     "open_in_tab": true,
     "page": "options.html"
   },
-  "permissions": [
-    "tabs",
-    "storage",
-    "notifications",
-    "bookmarks"
-  ],
-  "version": "1.7.11"
+  "permissions": ["tabs", "storage", "notifications", "bookmarks"],
+  "version": "1.0"
 }
