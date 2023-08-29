@@ -12,6 +12,17 @@ browser.storage.local.get("syncEnabled", function (result) {
   }
 });
 
+browser.storage.onChanged.addListener(() => {
+  let res = browser.storage.local.get("selectors");
+  if (!Array.isArray(res.selectors)) {
+    return;
+  }
+  res.selectors.forEach((selector) => {
+    selector.action = "delete";
+    createTableRow(selector);
+  });
+});
+
 function deleteRow(rowTr) {
   let mainTableBody = document.getElementById("mainTableBody");
   mainTableBody.removeChild(rowTr);
@@ -116,18 +127,18 @@ function createButton(text, id, callback, submit) {
   return span;
 }
 
-  async function saveOptions(/*e*/) {
-    let feeds = collectConfig();
-    await browser.storage.local.set({ selectors: feeds });
+async function saveOptions(/*e*/) {
+  let feeds = collectConfig();
+  await browser.storage.local.set({ selectors: feeds });
 
-    // Save syncCheckbox value to local storage
-    await browser.storage.local.set({ syncEnabled: syncCheckbox.checked });
+  // Save syncCheckbox value to local storage
+  await browser.storage.local.set({ syncEnabled: syncCheckbox.checked });
 
-    // Sync with account if checkbox is checked
-    if (syncCheckbox.checked) {
-      await browser.storage.sync.set({ selectors: feeds });
-    }
+  // Sync with account if checkbox is checked
+  if (syncCheckbox.checked) {
+    await browser.storage.sync.set({ selectors: feeds });
   }
+}
 
 async function restoreOptions() {
   bookmarkFolders = await browser.runtime.sendMessage({});
@@ -154,10 +165,10 @@ async function restoreOptions() {
       });
     } else {
       // If no local selectors, check for synced selectors
-     await browser.storage.sync.get("selectors", function (syncResult) {
+      browser.storage.sync.get("selectors", function (syncResult) {
         if (syncResult.selectors) {
           // Save synced selectors to local storage
-          await browser.storage.local.set({ selectors: syncResult.selectors });
+          browser.storage.local.set({ selectors: syncResult.selectors });
           // Populate selectorList with synced selectors
           syncResult.selectors.forEach((selector) => {
             selector.action = "delete";
@@ -178,10 +189,10 @@ const expbtn = document.getElementById("expbtn");
 
 // Sync button click event
 syncButton.addEventListener("click", function () {
-  await browser.storage.sync.get("selectors", function (result) {
+  browser.storage.sync.get("selectors", function (result) {
     if (result.selectors) {
       // Save synced selectors to local storage
-      await browser.storage.local.set({ selectors: result.selectors });
+      browser.storage.local.set({ selectors: result.selectors });
       // Populate selectorList with synced selectors
       result.selectors.forEach((selector) => {
         selector.action = "delete";
