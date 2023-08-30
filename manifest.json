@@ -15,11 +15,11 @@
     "128": "icon.png"
   },
   "manifest_version": 2,
-  "name": "Bookmark Router (fork)",
+  "name": "Bookmark Router (forked)",
   "options_ui": {
     "open_in_tab": true,
     "page": "options.html"
   },
   "permissions": ["tabs", "storage", "notifications", "bookmarks"],
-  "version": "1.0"
+  "version": "1.1"
 }
