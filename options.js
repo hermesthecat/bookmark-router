@@ -3,7 +3,9 @@
 let bookmarkFolders;
 
 const syncCheckbox = document.getElementById("sync-checkbox");
-const syncButton = document.getElementById("sync-button");
+// const syncButton = document.getElementById("sync-button");
+const syncSetbtn = document.getElementById("syncsetbtn");
+const syncGetbtn = document.getElementById("syncgetbtn");
 
 // Load syncCheckbox value from local storage
 browser.storage.local.get("syncEnabled", function (result) {
@@ -187,20 +189,44 @@ const impbtnWrp = document.getElementById("impbtn_wrapper");
 const impbtn = document.getElementById("impbtn");
 const expbtn = document.getElementById("expbtn");
 
-// Sync button click event
-syncButton.addEventListener("click", function () {
-  browser.storage.sync.get("selectors", function (result) {
-    if (result.selectors) {
-      // Save synced selectors to local storage
-      browser.storage.local.set({ selectors: result.selectors });
-      // Populate selectorList with synced selectors
-      result.selectors.forEach((selector) => {
-        selector.action = "delete";
-        createTableRow(selector);
-      });
-    }
-  });
+syncGetbtn.addEventListener("click", async function () {
+  const result = await browser.storage.sync.get("selectors");
+  if (typeof result !== "undefined" && Array.isArray(result.selectors)) {
+    result.selectors.forEach((selector) => {
+      selector.action = "delete";
+      createTableRow(selector);
+    });
+  }
 });
+
+syncSetbtn.addEventListener("click", async function () {
+  if (
+    confirm(
+      "Are you sure? This will save your current local rules via your FF account, if available. To retain any previous saved rules use from the FF Sync use the restore button first to load, modify and save them locally."
+    )
+  ) {
+    const result = await browser.storage.local.get("selectors");
+
+    if (typeof result !== "undefined" && Array.isArray(result.selectors)) {
+      await browser.storage.sync.set({ selectors: result.selectors });
+    }
+  }
+});
+
+// // Sync button click event
+// syncButton.addEventListener("click", function () {
+//   browser.storage.sync.get("selectors", function (result) {
+//     if (result.selectors) {
+//       // Save synced selectors to local storage
+//       browser.storage.local.set({ selectors: result.selectors });
+//       // Populate selectorList with synced selectors
+//       result.selectors.forEach((selector) => {
+//         selector.action = "delete";
+//         createTableRow(selector);
+//       });
+//     }
+//   });
+// });
 
 expbtn.addEventListener("click", async function (/*evt*/) {
   let dl = document.createElement("a");
